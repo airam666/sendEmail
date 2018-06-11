@@ -1,0 +1,6 @@
+<table>	<tr>
+		<th>article_id</th>		<th>title</th>		<th>category</th>	</tr>
+	<tr>
+		<td style="text-align:right">1</td>		<td>Java Concurrency</td>		<td>Java</td>	</tr>	<tr>
+		<td style="text-align:right">2</td>		<td>Hibernate HQL </td>		<td>Hibernate</td>	</tr>	<tr>
+		<td style="text-align:right">3</td>		<td>Spring MVC with Hibernate</td>		<td>Spring</td>	</tr></table>

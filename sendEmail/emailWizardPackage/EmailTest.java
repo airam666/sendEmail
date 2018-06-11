@@ -1,4 +1,6 @@
-package emailSender;
+package emailWizardPackage;
+
+
 
 import java.sql.Connection;
 //import java.sql.DriverManager;
@@ -76,7 +78,7 @@ class ArticleDao {
 
     public List<Article> getArticles() throws Exception {
     	ConnectionMSQL connToDB = ConnectionMSQL.getInstance();
-    	connToDB.setMSQLData("www.db4free.net", "3306", "somebd", "user", "key");
+    	connToDB.setMSQLData("www.db4free.net", "3306", "bd", "user", "pass");
     	con=connToDB.getConnection();
         PreparedStatement ps = con.prepareStatement(GET_ARTICLES);
         ResultSet rs = ps.executeQuery();
@@ -115,7 +117,7 @@ class EmailSender {
 
         session = Session.getInstance(props, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication("b1@gmail.com", "123");
+                return new PasswordAuthentication("b1@gmail.com", "123456");
             }
         });
     }
@@ -126,8 +128,8 @@ class EmailSender {
          message.setFrom(new InternetAddress("b1@gmail.com"));
 //         message.setRecipients(Message.RecipientType.TO,
 //             InternetAddress.parse(e.getArticle_id()));
+         message.setRecipient(Message.RecipientType.TO, new InternetAddress("b2@gmail.com"));
          message.setRecipient(Message.RecipientType.TO, new InternetAddress("b1@gmail.com"));
-         message.setRecipient(Message.RecipientType.TO, new InternetAddress("a1@gmail.com"));
          message.setSubject("Report");
          message.setText(e.getTitle() + " " + e.getCategory());
          Transport.send(message);
@@ -139,11 +141,13 @@ class EmailSender {
     }
 }
 
-public class emailSenderWizard {
-    public static void main(String[] args) throws Exception {
-    	ArticleDao dao=new ArticleDao();
-        List<Article> list=dao.getArticles();
-        EmailSender sender=new EmailSender();
-        sender.sendEmail(list);
-    }
+
+
+public class EmailTest {
+//    public static void main(String[] args) throws Exception {
+//    	ArticleDao dao=new ArticleDao();
+//        List<Article> list=dao.getArticles();
+//        EmailSender sender=new EmailSender();
+//        sender.sendEmail(list);
+//    }
 }
