@@ -1,24 +1,15 @@
 package emailWizardPackage;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.sql.Connection;
-//import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 import utils.ConnectionMSQL;
-import utils.ResultSetToHtmlTable;
+import utils.CSVWriter;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -47,43 +38,24 @@ public class EmailWizard {
 	private static String filename = strDate+"_Data_quality_report.csv";
     private static final String GET_ARTICLES = "SELECT * FROM articles";
     
-    public static void convertToCsv(ResultSet rs) throws SQLException, FileNotFoundException {
-        PrintWriter csvWriter = new PrintWriter(new File(filename)) ;
-        ResultSetMetaData meta = rs.getMetaData(); 
-        int numberOfColumns = meta.getColumnCount() ; 
-        String dataHeaders = "\"" + meta.getColumnName(1) + "\"" ; 
-        for (int i = 2 ; i < numberOfColumns + 1 ; i ++ ) { 
-                dataHeaders += ",\"" + meta.getColumnName(i).replaceAll("\"","\\\"") + "\"" ;
-        }
-        csvWriter.println(dataHeaders) ;
-        while (rs.next()) {
-            String row = "\"" + rs.getString(1).replaceAll("\"","\\\"") + "\""  ; 
-            for (int i = 2 ; i < numberOfColumns + 1 ; i ++ ) {
-                row += ",\"" + rs.getString(i).replaceAll("\"","\\\"") + "\"" ;
-            }
-        csvWriter.println(row) ;
-        }
-        csvWriter.close();
-    }
     
     public void getArticles() throws Exception {
     	ConnectionMSQL connToDB = ConnectionMSQL.getInstance();
-    	connToDB.setMSQLData("www.db4free.net", "3306", "DB", "user", "key");
+    	connToDB.setMSQLData("www.db4free.net", "3306", "db", "user", "pass");
     	con=connToDB.getConnection();
         PreparedStatement ps = con.prepareStatement(GET_ARTICLES);
         ResultSet rs = ps.executeQuery();
-        convertToCsv(rs);
-//        ResultSetToHtmlTable table = new ResultSetToHtmlTable();
-        
-//        PrintWriter out = new PrintWriter ("file.txt");
-//		        String result = table.writeTable(rs, writer);
-//        int result = dumpData(rs, out);
+        //creates a csv with the data query
+        CSVWriter.convertToCsv(rs, filename);
         
         disconnect();
     }
     
     private Session session;
-
+    
+    /*
+     * Authenticates the email user.
+     */
     private void init() {
 //        Properties props = new Properties();
 //        props.put("mail.smtp.auth", "true");
@@ -100,11 +72,14 @@ public class EmailWizard {
 
         session = Session.getInstance(props, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication("sender@gmail.com", "password");
+                return new PasswordAuthentication("sender@gmail.com", "pass");
             }
         });
     }
-	
+    
+    /*
+     * Sends an email with the data attached	
+     */
 	public void sendEmail() throws UnsupportedEncodingException, MessagingException {
 	    init();
 	    try {
@@ -121,22 +96,22 @@ public class EmailWizard {
 	    BodyPart texto = new MimeBodyPart();
         texto.setText("Adjunto reporte de calidad de data del dia " + new Date());
 
-        // Se compone el adjunto con la imagen
+        // the attach with the file is composed
         BodyPart adjunto = new MimeBodyPart();
         adjunto.setDataHandler(
             new DataHandler(new FileDataSource(filename)));
         adjunto.setFileName(filename);
 
-        // Una MultiParte para agrupar texto e imagen.
-        MimeMultipart multiParte = new MimeMultipart();
-        multiParte.addBodyPart(texto);
-        multiParte.addBodyPart(adjunto);
+        // a multipart compose text and file.
+        MimeMultipart multiPart = new MimeMultipart();
+        multiPart.addBodyPart(texto);
+        multiPart.addBodyPart(adjunto);
 
 	    try {
 			msg.setFrom(a);
 			msg.addRecipient(Message.RecipientType.TO, b);
 			msg.setSubject("Articles");
-			msg.setContent(multiParte);
+			msg.setContent(multiPart);
 
 	    Transport.send(msg);
 	    } catch (MessagingException e) {
@@ -170,6 +145,7 @@ public class EmailWizard {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println("Done!");
 
 	}
 	

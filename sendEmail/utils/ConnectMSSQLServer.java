@@ -1,46 +1,36 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package utils;
 
-import java.sql.DriverManager;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * @brief clase que establece conexion con base de datos mysql. usa el mysql-connector-java-8.0.11
+ * @brief clase que establece conexion con base de datos SQL Server.
  * @author fpalacios
  */
-public class ConnectionMSQL {
+public class ConnectMSSQLServer {
 
-    private static ConnectionMSQL instance;
+
+	private static ConnectMSSQLServer instance;
     private Connection conn = null;
     private String hostnameConn = "";
     private String portConn = "";
     private String dbnameConn = "";
     private String usernameConn = "";
     private String passwordConn = "";
-    
     protected PreparedStatement preparedStmnt = null;
-    //    
-    //Statement stmt = conn.createStatement() ;
-    //String query = "select columnname from tablename ;" ;
-    //ResultSet rs = stmt.executeQuery(query) ;
-
-    private ConnectionMSQL() {
+	private ConnectMSSQLServer() {
     }
 
-    public static ConnectionMSQL getInstance() {
+    public static ConnectMSSQLServer getInstance() {
         if (instance == null) {
-            instance = new ConnectionMSQL();
+            instance = new ConnectMSSQLServer();
         }
         return instance;
     }
-
-    public void setMSQLData(String hostname, String port, String dbname, String username, String password) {
+    
+    public void setMSSQLServerData(String hostname, String port, String dbname, String username, String password) {
         hostnameConn = hostname;
         portConn = port;
         dbnameConn = dbname;
@@ -48,18 +38,16 @@ public class ConnectionMSQL {
         passwordConn = password;
 
     }
-
     public Connection getConnection() {
-        //this.conn = DriverManager.getConnection("jdbc:mysql://hostname:port/dbname", "username", "password");
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+        	Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             System.out.println("jdbc:mysql://"
                     + hostnameConn
                     + ":" + portConn
                     + "/" + dbnameConn + ", "+
                     usernameConn + ", " +
                     passwordConn );
-            this.conn = DriverManager.getConnection("jdbc:mysql://"
+            this.conn = DriverManager.getConnection("jdbc:sqlserver://"
                     + hostnameConn
                     + ":" + portConn
                     + "/" + dbnameConn,
@@ -74,6 +62,5 @@ public class ConnectionMSQL {
     protected void closeConnection() throws SQLException{
             conn.close();
     }
-    
 
 }
