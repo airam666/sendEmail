@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import com.microsoft.sqlserver.jdbc.*; 
+
 /**
  * @brief clase que establece conexion con base de datos SQL Server.
  * @author fpalacios
@@ -41,19 +43,18 @@ public class ConnectMSSQLServer {
     public Connection getConnection() {
         try {
         	Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            System.out.println("jdbc:mysql://"
+            System.out.println("jdbc:sqlserver://"
                     + hostnameConn
                     + ":" + portConn
                     + "/" + dbnameConn + ", "+
                     usernameConn + ", " +
                     passwordConn );
-            this.conn = DriverManager.getConnection("jdbc:sqlserver://"
-                    + hostnameConn
-                    + ":" + portConn
-                    + "/" + dbnameConn,
-                    usernameConn,
-                    passwordConn);
-        } catch (SQLException | ClassNotFoundException e) {
+            String connectionUrl = "jdbc:sqlserver://"+hostnameConn+":"+portConn+";" +  
+       	         "databaseName="+dbnameConn+";user="+usernameConn+";password="+passwordConn; 
+            
+            this.conn = DriverManager.getConnection(connectionUrl);  
+            
+        } catch (Exception  e) {
             e.getCause();
         }
         return conn;

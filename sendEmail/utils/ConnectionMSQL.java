@@ -65,7 +65,7 @@ public class ConnectionMSQL {
                     + "/" + dbnameConn,
                     usernameConn,
                     passwordConn);
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (Exception e) {
             e.getCause();
         }
         return conn;

@@ -2,14 +2,19 @@ package emailWizardPackage;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import utils.ConnectionMSQL;
+import utils.ConnectMSSQLServer;
 import utils.CSVWriter;
+
+import com.microsoft.sqlserver.jdbc.*; 
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -35,20 +40,30 @@ public class EmailWizard {
 	private static Date myDate = new Date();
 	private static SimpleDateFormat sm = new SimpleDateFormat("MM-dd-yyyy");
 	private static String strDate = sm.format(myDate);
+	private static final String BIG_ASS_QUERY = "SELECT * FROM articles";
 	private static String filename = strDate+"_Data_quality_report.csv";
-    private static final String GET_ARTICLES = "SELECT * FROM articles";
+//    private static final String GET_ARTICLES = "SELECT * FROM articles";
     
+       
     
     public void getArticles() throws Exception {
-    	ConnectionMSQL connToDB = ConnectionMSQL.getInstance();
-    	connToDB.setMSQLData("www.db4free.net", "3306", "db", "user", "pass");
-    	con=connToDB.getConnection();
-        PreparedStatement ps = con.prepareStatement(GET_ARTICLES);
-        ResultSet rs = ps.executeQuery();
-        //creates a csv with the data query
-        CSVWriter.convertToCsv(rs, filename);
-        
+    	//ConnectionMSQL connToDB = ConnectionMSQL.getInstance();
+    	try {
+	    	ConnectMSSQLServer connToDB = ConnectMSSQLServer.getInstance();
+	    	connToDB.setMSSQLServerData("host", "port", "db", "user", "pass");
+	    	Thread.sleep(500);
+	    	con=connToDB.getConnection();
+	//        PreparedStatement ps = con.prepareStatement(GET_ARTICLES);
+	    	PreparedStatement ps = con.prepareStatement(BIG_ASS_QUERY);
+	        Thread.sleep(500);
+	        ResultSet rs = ps.executeQuery();
+	        //creates a csv with the data query
+	        CSVWriter.convertToCsv(rs, filename);
+	        
         disconnect();
+    	}catch (Exception e) {
+    		System.out.println("error " + e.getMessage());
+    	}
     }
     
     private Session session;
@@ -57,11 +72,6 @@ public class EmailWizard {
      * Authenticates the email user.
      */
     private void init() {
-//        Properties props = new Properties();
-//        props.put("mail.smtp.auth", "true");
-//        props.put("mail.smtp.starttls.enable", "true");
-//        props.put("mail.smtp.host", "100.00.000.000");
-//        props.put("mail.smtp.port", "20");
     	Properties props = new Properties();
 		props.put("mail.smtp.host", "smtp.gmail.com");
 		props.put("mail.smtp.socketFactory.port", "465");
@@ -72,7 +82,7 @@ public class EmailWizard {
 
         session = Session.getInstance(props, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication("sender@gmail.com", "pass");
+                return new PasswordAuthentication("b1@gmail.com", "pass");
             }
         });
     }
@@ -91,8 +101,8 @@ public class EmailWizard {
 	    
 	    Message msg = new MimeMessage(session);
 
-	    Address a = new InternetAddress("sender@gmail.com", "Maria's testing");
-	    Address b = new InternetAddress("receiver@gmail.com");
+	    Address a = new InternetAddress("b1@gmail.com", "Maria's testing");
+	    Address b = new InternetAddress("b2@gmail.com");
 	    BodyPart texto = new MimeBodyPart();
         texto.setText("Adjunto reporte de calidad de data del dia " + new Date());
 
@@ -138,15 +148,11 @@ public class EmailWizard {
 		EmailWizard wiz = new EmailWizard();
 		try {
 			wiz.sendEmail();
-		} catch (AddressException | UnsupportedEncodingException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 		System.out.println("Done!");
-
 	}
 	
 	private void disconnect() throws SQLException {
